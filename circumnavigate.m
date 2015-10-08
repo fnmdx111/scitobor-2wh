@@ -10,25 +10,54 @@
 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%
+%
+function finish = am_i_done(r, pose, obstacle_to_goal_dist)
+    global tolerance
+    global goal_coord
+    global obstacle_hit_pos
+
+    current_pos = pos_from_ht(pose);
+    dist = norm(goal_coord - current_pos);
+
+    if dist < tolerance
+        finish = 1;
+    elseif norm(obstacle_hit_pos - current_pos) < tolerance
+        finish = -1;
+    elseif is_intersected(pose)
+        if dist < obstacle_to_goal_dist
+            if bump_test(r) == NO_BUMP
+                finish = 0;
+            end
+        end
+    else
+        finish = 999;
+    end
+end
 
 %% main function
 % our code should work even when wall sensor does not work
-function circumnavigate(r)
+function ok = circumnavigate(r, old_pose)
     global simulator
     simulator = 1;
+
+    global goal_coord
+    goal_coord = [4 0];
 
     global tolerance
     tolerance = 0.25; % this will make up the errors incurred in navigation
 
-    bump = bump_test(r); % go straight until Create hit a wall
-    while bump == NO_BUMP
-        move_forward(r, WALK_VEL, WALK_TIME);
-        bump = bump_test(r);
-    end
-    
-    origin = se(0, 0, 0);
-    pose = se(DistanceSensorRoomba(r), 0, AngleSensorRoomba(r));
-    % this is the position Create first hits a wall
+    origin = old_pose;
+    pose = origin;
+
+    global obstacle_hit_pos
+    obstacle_hit_pos = pos_from_ht(pose);
+    % we need this position every time we want to tell if the
+    % robot is at the obstacle hit point again,
+    % we also need the distance from obstacle to the goal, which
+    % we only calculate once
+
+    obstacle_to_goal_dist = norm(obstacle_hit_pos - origin);
 
     % ensure Create will not stop at first few steps 
     while norm(pose(:, 3) - origin(:, 3)) <= tolerance
@@ -37,9 +66,17 @@ function circumnavigate(r)
 
     % move before Create comes back to the point where it first
     % hit the wall
-    while norm(pose(:, 3) - origin(:, 3)) > tolerance
+    f = am_i_done(r, pose, obstacle_to_goal_dist);
+    while f == 999
         pose = next_move(r, pose); % update position
+        f = am_i_done(r, pose, obstacle_to_goal_dist);
     end
+
+    ok = f;
+    % if ok == 0, forward we go
+    % if ok == 1, goal we are at
+    % if ok == -1, trapped we must be
+    % else (f == 999), go on circumnavigation
 end
 
 % move, and update the position of Create
