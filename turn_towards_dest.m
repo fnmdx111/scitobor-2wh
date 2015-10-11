@@ -1,16 +1,18 @@
 function pose = turn_towards_dest(r, old_pose)
-% turn the Roomba to make it head towards destination
+% turn the iCreate to make it head towards destination
 
 
 current_angle = acos(old_pose(1, 1)); % pose(1, 1) = cos(theta)
 
+global angle_tolerance; 
+angle_tolerance = 0.01; % TODO: what value to choose?
 
-if current_angle == 0 % no need to turn Roomba 
-                      % if it already heads towards destnation
-    pose = old_post;
+if abs(current_angle) <= angle_tolerance % no need to turn iCreate if it
+                                         % already heads towards destnation
+    pose = old_pose;
     
  
-else if current_angle < 0 % we need to make Roomba turn left
+else if current_angle < 0 % we need to make iCreate turn left
   
     angle_accum = AngleSensorRoomba(r);
 
@@ -27,7 +29,7 @@ else if current_angle < 0 % we need to make Roomba turn left
     pose = old_pose * pose;
     
     
-    else % current_angle > 0, we need to make Roomba turn right
+    else % current_angle > 0, we need to make iCreate turn right
     
     angle_accum = AngleSensorRoomba(r);
 
