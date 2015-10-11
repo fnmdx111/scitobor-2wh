@@ -7,7 +7,7 @@ current_angle = acos(old_pose(1, 1)); % pose(1, 1) = cos(theta)
 
 if current_angle == 0 % no need to turn Roomba 
                       % if it already heads towards destnation
-    pose = old_post;
+    pose = old_pose;
     
  
 else if current_angle < 0 % we need to make Roomba turn left
