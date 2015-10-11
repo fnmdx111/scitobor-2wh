@@ -2,7 +2,7 @@ function mainloop(r)
 %MAINLOOP Summary of this function goes here
 %   Detailed explanation goes here
     global tolerance;
-    tolerance = 0.2;
+    tolerance = 0.1;
 
     global simulator
     simulator = 1;
@@ -25,17 +25,29 @@ function mainloop(r)
         display(pose)
 
         %move forward until bump
+        CALIBRATE_COUNTER = 5;
+        counter = 0;
+
         bump=bump_test(r);
         while bump==NO_BUMP
+            if counter > CALIBRATE_COUNTER
+                pose = turn_towards_dest(r, pose);
+                counter = 0;
+            end
+            counter = counter + 1;
+
+            display(norm(pos_from_ht(pose) - goal_coord))
+
             dist = move_forward(r, WALK_VEL, WALK_TIME);
             pose = pose * se(dist, 0, 0);
-            
+
             if simulator == 1
                 trplot2(pose);
             end
 
             if norm(pose(:, 3) - endpose(:,3)) < tolerance
-                exit(0);
+                display('SUCEED')
+                return;
             end
             bump = bump_test(r);
         end
