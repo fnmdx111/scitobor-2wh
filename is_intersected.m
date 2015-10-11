@@ -16,7 +16,11 @@ angle = acos(dot(goal_coord,current_pos)/...
     
 % if angle equals to zero, startpoint, current point, and destination    
 % are on a line, which means that Roomba is on "m-line"
-if angle == 0 
+% we cannot compare two float numbers to know whether or not they are equal
+% so we try to import tolerance
+global angle_tolerance; 
+angle_tolerance = 0.01; % TODO: what value to choose?
+if abs(angle) <= angle_tolerance
     b = 1;
 else
     b = 0;
