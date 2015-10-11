@@ -6,7 +6,16 @@ function b = is_intersected(old_pose)
 global goal_coord % [4 0] destination
 
 current_pos = pos_from_ht(old_pose); % current position
+display(current_pos)
 
+if abs(current_pos(2)) <= 0.1
+    b = 1;
+else
+    b = 0;
+end
+
+display(b)
+return
 % vector_1: vector points from startpoint of iCreate to current position
 % vector_2: vector points from startpoint of iCreate to destination
 %           also called as "m-line"
@@ -18,12 +27,12 @@ angle = acos(dot(goal_coord,current_pos)/...
 % are on a line, which means that iCreate is on "m-line"
 % we cannot compare two float numbers to know whether or not they are equal
 % so we try to import tolerance
-global angle_tolerance; 
+global angle_tolerance;
 angle_tolerance = 0.01; % TODO: what value to choose?
 if abs(angle) <= angle_tolerance
     b = 1;
 else
     b = 0;
-
 end
 
+end

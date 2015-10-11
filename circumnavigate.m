@@ -23,6 +23,8 @@ function pose = circumnavigate(r, old_pose)
     global tolerance
     tolerance = 0.25; % this will make up the errors incurred in navigation
 
+    global goal_coord;
+
     origin = old_pose;
     pose = origin;
 
@@ -33,7 +35,8 @@ function pose = circumnavigate(r, old_pose)
     % we also need the distance from obstacle to the goal, which
     % we only calculate once
 
-    obstacle_to_goal_dist = norm(obstacle_hit_pos - pos_from_ht(origin));
+    global obstacle_to_goal_dist
+    obstacle_to_goal_dist = norm(obstacle_hit_pos - goal_coord);
 
     % ensure Create will not stop at first few steps 
     while norm(pose(:, 3) - origin(:, 3)) <= tolerance
@@ -46,7 +49,7 @@ function pose = circumnavigate(r, old_pose)
 
     % move before Create comes back to the point where it first
     % hit the wall
-    f = am_i_done(r, pose, obstacle_to_goal_dist);
+    f = am_i_done(r, pose);
     while f == 999
         pose = next_move(r, pose); % update position
 
@@ -54,7 +57,10 @@ function pose = circumnavigate(r, old_pose)
             trplot2(pose);
         end
 
-        f = am_i_done(r, pose, obstacle_to_goal_dist);
+        f = am_i_done(r, pose);
+        if f ~= 999
+            break
+        end
     end
 
     circumnavigate_ok = f;
@@ -66,28 +72,30 @@ end
 
 %%
 %
-function finish = am_i_done(r, pose, obstacle_to_goal_dist)
+function finish = am_i_done(r, pose)
     global tolerance
     global goal_coord
     global obstacle_hit_pos
+    global obstacle_to_goal_dist
 
     current_pos = pos_from_ht(pose);
     dist = norm(goal_coord - current_pos);
 
     if dist < tolerance
         finish = 1;
+        return
     elseif norm(obstacle_hit_pos - current_pos) < tolerance
         finish = -1;
-    elseif is_intersected(pose)
+        return
+    elseif is_intersected(pose) == 1
         if dist < obstacle_to_goal_dist
-            if bump_test(r) == NO_BUMP
+            % if bump_test(r) == NO_BUMP
                 finish = 0;
-            end
-            finish = 999;
+                return;
+            % end
         end
-    else
-        finish = 999;
     end
+    finish = 999;
 end
 
 % move, and update the position of Create
@@ -105,13 +113,13 @@ function pose = next_move(r, old_pose)
         if bump == FRONT
             pose = old_pose * turn_left_till_bump_gone(r);
         else
-            pose = old_pose * bypass(r);
+            pose = old_pose * bypass(r, old_pose);
         end
     else
         if wall == 1
             pose = old_pose * walk_straightly(r);
         else
-            pose = old_pose * turn_right_until_a_wall(r);
+            pose = old_pose * turn_right_until_a_wall(r, old_pose);
         end
     end
 end
@@ -141,8 +149,9 @@ function pose = turn_left_till_bump_gone(r)
     pose = se(0, 0, angle_accum);
 end
 
-function pose = turn_right_until_a_wall(r)
+function pose = turn_right_until_a_wall(r, old_pose)
     global simulator
+    global circumnavigate_ok
 
     angle_accum = AngleSensorRoomba(r);
 
@@ -192,13 +201,20 @@ function pose = turn_right_until_a_wall(r)
                 %        the distance here.
                 dist_delta = move_forward(r, WALK_VEL, WALK_TIME);
                 dist_accum = dist_accum + dist_delta;
+
+                circumnavigate_ok = am_i_done(...
+                    r,...
+                    old_pose * se(dist_accum, 0, angle_accum));
+
+                if circumnavigate_ok ~= 999
+                    pose = se(dist_accum, 0, angle_accum + AngleSensorRoomba(r));
+                    return
+                end
             end
             delta_pose = delta_pose *...
                          se(dist_accum, 0.,...
                             angle_accum + AngleSensorRoomba(r));
-                            % Accumulate the angle every time!
-                            % Accumulate the angle every time!
-                            % Accumulate the angle every time!
+
             max_angle_reached = 1;
             break
         end
@@ -219,7 +235,9 @@ function pose = turn_right_until_a_wall(r)
                             angle_accum + AngleSensorRoomba(r));
 end
 
-function new_pose = bypass(r)
+function new_pose = bypass(r, old_pose)
+    global circumnavigate_ok
+
     angle_accum = AngleSensorRoomba(r);
 
     bump = bump_test(r);
@@ -241,6 +259,14 @@ function new_pose = bypass(r)
     while dist_accum < BYPASS_DIST % walk ahead
         dist_delta = move_forward(r, WALK_VEL, WALK_TIME);
         dist_accum = dist_accum + dist_delta;
+        
+        circumnavigate_ok = am_i_done(...
+            r,...
+            old_pose * se(dist_accum, 0, angle_accum));
+        if circumnavigate_ok ~= 999
+            new_pose = new_pose * se(dist_accum, 0., AngleSensorRoomba(r));
+            return
+        end
     end
     new_pose = new_pose * se(dist_accum, 0., AngleSensorRoomba(r));
                                              % Accumulate the angle
