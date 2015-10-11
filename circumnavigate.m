@@ -37,9 +37,12 @@ end
 
 %% main function
 % our code should work even when wall sensor does not work
-function ok = circumnavigate(r, old_pose)
+function pose = circumnavigate(r, old_pose)
     global simulator
     simulator = 1;
+
+    global circumnavigate_ok
+    circumnavigate_ok = 999;
 
     global goal_coord
     goal_coord = [4 0];
@@ -72,7 +75,7 @@ function ok = circumnavigate(r, old_pose)
         f = am_i_done(r, pose, obstacle_to_goal_dist);
     end
 
-    ok = f;
+    circumnavigate_ok = f;
     % if ok == 0, forward we go
     % if ok == 1, goal we are at
     % if ok == -1, trapped we must be
