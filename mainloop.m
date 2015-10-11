@@ -2,7 +2,7 @@ function mainloop(r)
 %MAINLOOP Summary of this function goes here
 %   Detailed explanation goes here
     global tolerance;
-    tolerance = 0.15;
+    tolerance = 0.1;
 
     global simulator
     simulator = 1;
@@ -31,6 +31,7 @@ function mainloop(r)
         bump=bump_test(r);
         while bump==NO_BUMP
             if counter > CALIBRATE_COUNTER
+                display('calibrating-----------------------')
                 pose = turn_towards_dest(r, pose);
                 counter = 0;
             end
