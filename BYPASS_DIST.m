@@ -1,4 +1,4 @@
-function h = BYPASS_DICT
+function h = BYPASS_DIST
 %BYPASS_DICT Summary of this function goes here
 %   Detailed explanation goes here
 

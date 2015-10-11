@@ -10,6 +10,60 @@
 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+
+%% main function
+% our code should work even when wall sensor does not work
+function pose = circumnavigate(r, old_pose)
+    global simulator
+
+    global circumnavigate_ok
+    circumnavigate_ok = 999;
+
+    global tolerance
+    tolerance = 0.25; % this will make up the errors incurred in navigation
+
+    origin = old_pose;
+    pose = origin;
+
+    global obstacle_hit_pos
+    obstacle_hit_pos = pos_from_ht(pose);
+    % we need this position every time we want to tell if the
+    % robot is at the obstacle hit point again,
+    % we also need the distance from obstacle to the goal, which
+    % we only calculate once
+
+    obstacle_to_goal_dist = norm(obstacle_hit_pos - pos_from_ht(origin));
+
+    % ensure Create will not stop at first few steps 
+    while norm(pose(:, 3) - origin(:, 3)) <= tolerance
+        pose = next_move(r, pose); % update position
+
+        if simulator == 1
+            trplot2(pose);
+        end
+    end
+
+    % move before Create comes back to the point where it first
+    % hit the wall
+    f = am_i_done(r, pose, obstacle_to_goal_dist);
+    while f == 999
+        pose = next_move(r, pose); % update position
+
+        if simulator == 1
+            trplot2(pose);
+        end
+
+        f = am_i_done(r, pose, obstacle_to_goal_dist);
+    end
+
+    circumnavigate_ok = f;
+    % if ok == 0, forward we go
+    % if ok == 1, goal we are at
+    % if ok == -1, trapped we must be
+    % else (f == 999), go on circumnavigation
+end
+
 %%
 %
 function finish = am_i_done(r, pose, obstacle_to_goal_dist)
@@ -29,57 +83,11 @@ function finish = am_i_done(r, pose, obstacle_to_goal_dist)
             if bump_test(r) == NO_BUMP
                 finish = 0;
             end
+            finish = 999;
         end
     else
         finish = 999;
     end
-end
-
-%% main function
-% our code should work even when wall sensor does not work
-function pose = circumnavigate(r, old_pose)
-    global simulator
-    simulator = 1;
-
-    global circumnavigate_ok
-    circumnavigate_ok = 999;
-
-    global goal_coord
-    goal_coord = [4 0];
-
-    global tolerance
-    tolerance = 0.25; % this will make up the errors incurred in navigation
-
-    origin = old_pose;
-    pose = origin;
-
-    global obstacle_hit_pos
-    obstacle_hit_pos = pos_from_ht(pose);
-    % we need this position every time we want to tell if the
-    % robot is at the obstacle hit point again,
-    % we also need the distance from obstacle to the goal, which
-    % we only calculate once
-
-    obstacle_to_goal_dist = norm(obstacle_hit_pos - origin);
-
-    % ensure Create will not stop at first few steps 
-    while norm(pose(:, 3) - origin(:, 3)) <= tolerance
-        pose = next_move(r, pose); % update position
-    end
-
-    % move before Create comes back to the point where it first
-    % hit the wall
-    f = am_i_done(r, pose, obstacle_to_goal_dist);
-    while f == 999
-        pose = next_move(r, pose); % update position
-        f = am_i_done(r, pose, obstacle_to_goal_dist);
-    end
-
-    circumnavigate_ok = f;
-    % if ok == 0, forward we go
-    % if ok == 1, goal we are at
-    % if ok == -1, trapped we must be
-    % else (f == 999), go on circumnavigation
 end
 
 % move, and update the position of Create
@@ -222,7 +230,6 @@ function new_pose = bypass(r)
         pause(0.2)
 
         angle_accum = angle_accum + AngleSensorRoomba(r);
-        
 
         bump = bump_test(r);
     end
