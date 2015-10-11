@@ -7,7 +7,7 @@ function h = TURN_VEL
     if simulator
         h = 0.001; % if we set h = 0.1 on the simulator, it just blows up
     else
-        h = 0.1;
+        h = 0.05;
     end
 end
 

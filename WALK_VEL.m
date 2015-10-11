@@ -4,4 +4,3 @@ function h = WALK_VEL
 
 h = 0.2;
 end
-

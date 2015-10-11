@@ -2,7 +2,7 @@ function mainloop(r)
 %MAINLOOP Summary of this function goes here
 %   Detailed explanation goes here
     global tolerance;
-    tolerance = 0.1;
+    tolerance = 0.15;
 
     global simulator
     simulator = 1;

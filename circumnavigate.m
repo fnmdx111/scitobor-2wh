@@ -21,9 +21,8 @@ function pose = circumnavigate(r, old_pose)
     circumnavigate_ok = 999;
 
     global tolerance
-    tolerance = 0.25; % this will make up the errors incurred in navigation
 
-    global goal_coord;
+    global goal_coord
 
     origin = old_pose;
     pose = origin;
@@ -170,15 +169,15 @@ function pose = turn_right_until_a_wall(r, old_pose)
                                %   the distance error incurred in turning
                                %   right will be unacceptible.
     if simulator == 0 % Create tends to turn more than we want it
-        max_angle = 17 * pi / 180;
+        max_angle = 11 * pi / 180;
     end
 
     delta_pose = se(0., 0., 0.);
 
     max_angle_reached = 0;
 
-    while wall == 0 && bump == NO_BUMP % if we bumped into something
-                                       % we most certainly shouldn't move
+    while (wall == 0) && (bump == NO_BUMP) % if we bumped into something
+                                           % we most certainly shouldn't move
         SetFwdVelRadiusRoomba(r, TURN_VEL, -eps);
 
         pause(0.2)
@@ -194,7 +193,7 @@ function pose = turn_right_until_a_wall(r, old_pose)
             % so we instead walk ahead a few steps,
             % and then start turning again.
             dist_accum = DistanceSensorRoomba(r);
-            while dist_accum < BYPASS_DIST * 0.5 % walk ahead
+            while dist_accum < BYPASS_DIST % walk ahead
                 % TODO: Maybe there will be a case that we stop here?
                 % FIXED: Every time we walked a bit ahead, the distance
                 %        will be recalculated again, so no need to test
@@ -209,6 +208,11 @@ function pose = turn_right_until_a_wall(r, old_pose)
                 if circumnavigate_ok ~= 999
                     pose = se(dist_accum, 0, angle_accum + AngleSensorRoomba(r));
                     return
+                end
+
+                bump_ = bump_test(r);
+                if bump_ ~= NO_BUMP
+                    break;
                 end
             end
             delta_pose = delta_pose *...
@@ -266,6 +270,11 @@ function new_pose = bypass(r, old_pose)
         if circumnavigate_ok ~= 999
             new_pose = new_pose * se(dist_accum, 0., AngleSensorRoomba(r));
             return
+        end
+
+        bump_ = bump_test(r);
+        if bump_ ~= NO_BUMP
+            break;
         end
     end
     new_pose = new_pose * se(dist_accum, 0., AngleSensorRoomba(r));
