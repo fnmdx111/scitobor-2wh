@@ -22,7 +22,7 @@ display('yiiiiiiipeeeeeeeee')
 display(dot(rob_vec, dest_vec))
 display(dot(dest_norm_vec, rob_vec));
 
-if dot(rob_vec, dest_vec) > 0.99 % no need to turn iCreate if it
+if dot(rob_vec, dest_vec) > 0.999 % no need to turn iCreate if it
                                          % already heads towards destnation
     pose = old_pose;
 
@@ -31,7 +31,7 @@ elseif dot(dest_norm_vec, rob_vec) < 0 % we need to make iCreate turn left
     angle_accum = AngleSensorRoomba(r);
 
     SetFwdVelRadiusRoomba(r, TURN_VEL, eps);
-    while dot(rob_vec, dest_vec) < 0.999 % TODO: need to consider bump???
+    while dot(rob_vec, dest_vec) < 0.998 % TODO: need to consider bump???
         pause(0.1)
 
         angle = AngleSensorRoomba(r);
@@ -51,7 +51,7 @@ else % current_angle > 0, we need to make iCreate turn right
     angle_accum = AngleSensorRoomba(r);
 
     SetFwdVelRadiusRoomba(r, TURN_VEL, -eps);
-    while dot(rob_vec, dest_vec) < 0.999 % TODO: need to consider bump???
+    while dot(rob_vec, dest_vec) < 0.998 % TODO: need to consider bump???
         pause(0.1)
 
         angle = AngleSensorRoomba(r);
