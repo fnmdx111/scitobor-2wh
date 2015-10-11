@@ -17,7 +17,9 @@ function mainloop(r)
        %move forward until bump
        bump=bump_test(r);
        while bump==NO_BUMP
-           move_forward(r, WALK_VEL, WALK_TIME);
+           dist = move_forward(r, WALK_VEL, WALK_TIME);
+           pose(1,3) = pose(1,3)+dist*pose(1,1);
+           pose(2,3) = pose(2,3)+dist*pose(2,1);
            if norm(pose(:, 3) - endpose(:,3)) < tolerance
                exit(0);
            end
