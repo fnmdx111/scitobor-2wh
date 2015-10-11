@@ -4,9 +4,11 @@ function pose = turn_towards_dest(r, old_pose)
 
 current_angle = acos(old_pose(1, 1)); % pose(1, 1) = cos(theta)
 
+global angle_tolerance; 
+angle_tolerance = 0.01; % TODO: what value to choose?
 
-if current_angle == 0 % no need to turn Roomba 
-                      % if it already heads towards destnation
+if abs(current_angle) <= angle_tolerance % no need to turn Roomba if it
+                                         % already heads towards destnation
     pose = old_pose;
     
  
