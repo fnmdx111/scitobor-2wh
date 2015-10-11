@@ -5,7 +5,7 @@ function pose = turn_towards_dest(r, old_pose)
 current_angle = asin(old_pose(2, 1)); % pose(1, 1) = cos(theta)
 
 global angle_tolerance; 
-angle_tolerance = 0.01; % TODO: what value to choose?
+angle_tolerance = 3 * pi / 180; % TODO: what value to choose?
 
 if abs(current_angle) <= angle_tolerance % no need to turn iCreate if it
                                          % already heads towards destnation
