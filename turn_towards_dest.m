@@ -14,16 +14,16 @@ if abs(current_angle) <= angle_tolerance % no need to turn iCreate if it
  
 else if current_angle < 0 % we need to make iCreate turn left
   
-    angle_accum = AngleSensoriCreate(r);
+    angle_accum = AngleSensorRoomba(r);
 
-    SetFwdVelRadiusiCreate(r, TURN_VEL, eps);
+    SetFwdVelRadiusRoomba(r, TURN_VEL, eps);
     while angle_accum < abs(current_angle) % TODO: need to consider bump???
         pause(0.2)
 
-        angle_accum = angle_accum + AngleSensoriCreate(r); 
+        angle_accum = angle_accum + AngleSensorRoomba(r); 
 
     end
-    SetFwdVelRadiusiCreate(r, 0, inf);
+    SetFwdVelRadiusRoomba(r, 0, inf);
 
     pose = se(0, 0, angle_accum);
     pose = old_pose * pose;
@@ -31,16 +31,16 @@ else if current_angle < 0 % we need to make iCreate turn left
     
     else % current_angle > 0, we need to make iCreate turn right
     
-    angle_accum = AngleSensoriCreate(r);
+    angle_accum = AngleSensorRoomba(r);
 
-    SetFwdVelRadiusiCreate(r, TURN_VEL, -eps);
+    SetFwdVelRadiusRoomba(r, TURN_VEL, -eps);
     while abs(angle_accum) < current_angle % TODO: need to consider bump???
         pause(0.2)
 
-        angle_accum = angle_accum + AngleSensoriCreate(r); 
+        angle_accum = angle_accum + AngleSensorRoomba(r); 
 
     end
-    SetFwdVelRadiusiCreate(r, 0, inf);
+    SetFwdVelRadiusRoomba(r, 0, inf);
 
     pose = se(0, 0, angle_accum);
     pose = old_pose * pose;
