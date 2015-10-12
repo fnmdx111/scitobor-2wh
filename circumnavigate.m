@@ -15,7 +15,7 @@
 %% main function
 % our code should work even when wall sensor does not work
 function pose = circumnavigate(r, old_pose)
-    global simulator
+    %global simulator
 
     global circumnavigate_ok
     circumnavigate_ok = 999;
@@ -192,6 +192,8 @@ function pose = turn_right_until_a_wall(r, old_pose)
             % so we instead walk ahead a few steps,
             % and then start turning again.
             dist_accum = DistanceSensorRoomba(r);
+            dist_accum = DistanceSensorRoomba(r); % TODO!!!
+            
             while dist_accum < BYPASS_DIST % walk ahead
                 % TODO: Maybe there will be a case that we stop here?
                 % FIXED: Every time we walked a bit ahead, the distance
@@ -226,6 +228,8 @@ function pose = turn_right_until_a_wall(r, old_pose)
         bump = bump_test(r);
     end
     SetFwdVelRadiusRoomba(r, 0, inf);
+    %display('velocity be 0!!!!!!');
+    
 
     if max_angle_reached == 1
         angle_accum = 0.;
