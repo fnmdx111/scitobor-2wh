@@ -40,10 +40,8 @@ function pose = circumnavigate(r, old_pose)
     % ensure Create will not stop at first few steps 
     while norm(pose(:, 3) - origin(:, 3)) <= tolerance
         pose = next_move(r, pose); % update position
-
-        if simulator == 1
-            trplot2(pose);
-        end
+        trplot2(pose);
+        hold on
     end
 
     % move before Create comes back to the point where it first
@@ -52,10 +50,9 @@ function pose = circumnavigate(r, old_pose)
     while f == 999
         pose = next_move(r, pose); % update position
 
-        if simulator == 1
-            trplot2(pose);
-        end
-
+        trplot2(pose);
+        hold on
+        
         f = am_i_done(r, pose);
         if f ~= 999
             break
@@ -108,6 +105,8 @@ function pose = next_move(r, old_pose)
 
     wall = wall_test(r);
     bump = bump_test(r);
+    display(wall)
+    display(bump)
     if bump ~= NO_BUMP   % if Create bumps into a something, it must stop
         if bump == FRONT
             pose = old_pose * turn_left_till_bump_gone(r);

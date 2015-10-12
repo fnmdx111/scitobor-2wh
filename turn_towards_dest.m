@@ -10,6 +10,7 @@ dot_tolerance = 0.01; % DO NOT USE
 global goal_coord
 rob_vec = [old_pose(1, 1) old_pose(1, 2)];
 
+
 dest_vec = goal_coord - [0 0];
 dest_vec = dest_vec / norm(dest_vec);
 
@@ -38,8 +39,9 @@ elseif dot(dest_norm_vec, rob_vec) < 0 % we need to make iCreate turn left
         rob_vec = rot(rob_vec, angle);
         display(dot(rob_vec, dest_vec))
 
-        angle_accum = angle_accum + angle;
+        angle_accum = angle_accum + angle;        
         trplot2(old_pose * se(0, 0, angle_accum));
+        hold on
     end
     SetFwdVelRadiusRoomba(r, 0, inf);
 

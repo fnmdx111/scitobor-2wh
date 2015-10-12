@@ -2,10 +2,10 @@ function mainloop(r)
 %MAINLOOP Summary of this function goes here
 %   Detailed explanation goes here
     global tolerance;
-    tolerance = 0.1;
+    tolerance = 0.25;
 
     global simulator
-    simulator = 1;
+    simulator = 0;
 
     global circumnavigate_ok
 
@@ -14,9 +14,12 @@ function mainloop(r)
 
     global goal_coord
     goal_coord = pos_from_ht(endpose);
-
+        
     trplot2(origin, 'color', 'g');
+    hold on
     trplot2(endpose, 'color', 'r');
+    hold on
+   
 
     pose=se(DistanceSensorRoomba(r), 0, AngleSensorRoomba(r));
     
@@ -25,8 +28,8 @@ function mainloop(r)
         display(pose)
 
         %move forward until bump
-        CALIBRATE_COUNTER = 5;
-        counter = 0;
+        CALIBRATE_COUNTER = 0;
+        counter = 1;
 
         bump=bump_test(r);
         while bump==NO_BUMP
@@ -42,12 +45,12 @@ function mainloop(r)
             dist = move_forward(r, WALK_VEL, WALK_TIME);
             pose = pose * se(dist, 0, 0);
 
-            if simulator == 1
-                trplot2(pose);
-            end
+            trplot2(pose);
+            hold on
 
             if norm(pose(:, 3) - endpose(:,3)) < tolerance
                 display('SUCEED')
+                SetFwdVelRadiusRoomba(r, 0, inf);
                 return;
             end
             bump = bump_test(r);
@@ -62,9 +65,11 @@ function mainloop(r)
         if circumnavigate_ok == 0
         elseif circumnavigate_ok == 1
             display('SUCCEED')
+            SetFwdVelRadiusRoomba(r, 0, inf);
             break;
         elseif circumnavigate_ok == -1
             display('FAIL')
+            SetFwdVelRadiusRoomba(r, 0, inf);
             break;
         end
     end
