@@ -1,22 +1,5 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% COMS W4733 Computational Aspects of Robotics 2015
-%
-% Homework 1
-%
-% Team number: 22
-% Team leader: Zihang Chen (zc2324)
-% Team members: Yixing Chen (yc3094), Xin Yang (xy2290)
-%   
-% 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-%% main function
-% our code should work even when wall sensor does not work
+% `circumnavigate` will work even without wall sensor
 function pose = circumnavigate(r, old_pose)
-    %global simulator
-
     global circumnavigate_ok
     circumnavigate_ok = 999;
 
@@ -66,9 +49,8 @@ function pose = circumnavigate(r, old_pose)
     % else (f == 999), go on circumnavigation
 end
 
-%%
-%
 function finish = am_i_done(r, pose)
+    trap_tolerance = 0.15;
     global tolerance
     global goal_coord
     global obstacle_hit_pos
@@ -80,15 +62,13 @@ function finish = am_i_done(r, pose)
     if dist < tolerance
         finish = 1;
         return
-    elseif norm(obstacle_hit_pos - current_pos) < tolerance
-        finish = -1;
-        return
+    elseif norm(obstacle_hit_pos - current_pos) < trap_tolerance
+        finish = -1; % we are back at where we start circumnavigating
+        return       % we are most certainly trapped
     elseif is_intersected(pose) == 1
         if dist < obstacle_to_goal_dist
-            % if bump_test(r) == NO_BUMP
-                finish = 0;
-                return;
-            % end
+            finish = 0;
+            return;
         end
     end
     finish = 999;
@@ -167,7 +147,7 @@ function pose = turn_right_until_a_wall(r, old_pose)
                                % Nor should it be too small:
                                %   the distance error incurred in turning
                                %   right will be unacceptible.
-    if simulator == 0 % Create tends to turn more than we want it
+    if simulator == 0 % Create tends to turn more than we want it to
         max_angle = 11 * pi / 180;
     end
 

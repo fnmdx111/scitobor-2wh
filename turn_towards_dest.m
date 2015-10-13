@@ -1,15 +1,24 @@
 function pose = turn_towards_dest(r, old_pose)
 % turn the iCreate to make it head towards destination
 
-global angle_tolerance
-angle_tolerance = 3 * pi / 180; % TODO: what value to choose?
+% The basic idea here is that we calculate the dot product between
+% the unit vector from start (origin) to goal, and the unit vector
+% of current orientation.
+% If the dot product result is nearly one, we are aligned to the
+% goal;
+% otherwise, turn a little and calculate the dot product again
 
-global dot_tolerance
-dot_tolerance = 0.01; % DO NOT USE
+% A little optimization here is that using the one of the normal
+% vectors of the destination vector (from start to goal), we can
+% minimize the angle we turn. If dot product between the orientation
+% vector and the selected normal vector is bigger than 0, then we
+% know that by turning right, the angle we turn will be less than
+% 180 degrees and vice versa.
+% The trick here is to test out the corresponding normal vector and
+% the orientation we turn to.
 
 global goal_coord
 rob_vec = [old_pose(1, 1) old_pose(1, 2)];
-
 
 dest_vec = goal_coord - [0 0];
 dest_vec = dest_vec / norm(dest_vec);

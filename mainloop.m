@@ -1,11 +1,9 @@
 function mainloop(r)
-%MAINLOOP Summary of this function goes here
-%   Detailed explanation goes here
     global tolerance;
     tolerance = 0.25;
 
     global simulator
-    simulator = 0;
+    simulator = 1;
 
     global circumnavigate_ok
 
@@ -14,7 +12,7 @@ function mainloop(r)
 
     global goal_coord
     goal_coord = pos_from_ht(endpose);
-        
+
     trplot2(origin, 'color', 'g');
     hold on
     trplot2(endpose, 'color', 'r');
@@ -22,18 +20,23 @@ function mainloop(r)
    
 
     pose=se(DistanceSensorRoomba(r), 0, AngleSensorRoomba(r));
-    
+
     while true
         pose=turn_towards_dest(r,pose);
         display(pose)
 
-        %move forward until bump
         CALIBRATE_COUNTER = 0;
-        counter = 1;
+        counter = 2;
 
+        %move forward until bump
         bump=bump_test(r);
         while bump==NO_BUMP
             if counter > CALIBRATE_COUNTER
+                % Because it cannot be guaranteed that we exit circumnavigation
+                % mode with perfect orientation towards goal. And a small error
+                % in orientation most often turns out to be disastrous. So the
+                % orientation must be calibrated before it's too late.
+                % We calibrate our orientation every 2 steps.
                 display('calibrating-----------------------')
                 pose = turn_towards_dest(r, pose);
                 counter = 0;
@@ -49,7 +52,7 @@ function mainloop(r)
             hold on
 
             if norm(pose(:, 3) - endpose(:,3)) < tolerance
-                display('SUCEED')
+                display('SUCCEED')
                 SetFwdVelRadiusRoomba(r, 0, inf);
                 return;
             end
@@ -62,16 +65,18 @@ function mainloop(r)
         %if meet the intersected line, break and turn towards end point
 
         pose = circumnavigate(r, pose);
-        if circumnavigate_ok == 0
+        if circumnavigate_ok == 0 % We finished circumnavigation, and need to
+                                  % go forward, so do nothing here
         elseif circumnavigate_ok == 1
             display('SUCCEED')
+            % Remember to stop the robot
             SetFwdVelRadiusRoomba(r, 0, inf);
             break;
         elseif circumnavigate_ok == -1
             display('FAIL')
+            % Same here
             SetFwdVelRadiusRoomba(r, 0, inf);
             break;
         end
     end
-
 end
